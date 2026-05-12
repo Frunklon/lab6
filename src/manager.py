@@ -71,4 +71,36 @@ class Manager:
             )
         for tenant in tenants_in_apartment ] 
     
-    
+    def check_deposit(self) -> bool:
+        for tenant_key, tenant in self.tenants.items():
+                tenant_transfers = [
+                    transfer.amount_pln
+                    for transfer in self.transfers
+                    if transfer.tenant == tenant_key
+                ]
+
+                if sum(tenant_transfers) != tenant.deposit_pln:
+                    return False
+        return True
+   
+
+    def get_annual_report(self, year: int) -> dict:
+
+        total_costs = sum(
+            bill.amount_pln
+            for bill in self.bills
+            if bill.settlement_year == year
+        )
+
+        total_income = sum(
+            transfer.amount_pln
+            for transfer in self.transfers
+            if transfer.settlement_year == year
+        )
+
+        return {
+            "year": year,
+            "total_costs": total_costs,
+            "total_income": total_income,
+            "balance": total_income - total_costs
+        }

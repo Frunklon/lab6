@@ -1,6 +1,6 @@
 from src.manager import Manager
 from src.models import Parameters
-
+import sys 
 
 def print_section_header(title: str):
     """Print a formatted section header"""
@@ -67,7 +67,31 @@ if __name__ == '__main__':
     parameters = Parameters()
     manager = Manager(parameters)
 
-    display_apartments(manager)
-    display_tenants(manager)
-    
+    if len(sys.argv) == 4:
+        apartment_key = sys.argv[1]
+        year = int(sys.argv[2])
+        month = int(sys.argv[3])
+        
+        print_section_header(f"ROZLICZENIE: {apartment_key} - {month}/{year}")
+        
+        apt_settlement = manager.get_settlement(apartment_key, year, month)
+        
+        if apt_settlement is not None:
+            print(f" Calkowity koszt dla mieszkania: {format_currency(apt_settlement.total_due_pln)}")
+            
+            tenant_settlements = manager.create_tenants_settlements(apt_settlement)
+            
+            if tenant_settlements:
+                print_subsection_header("Podzial na najemcow")
+                for ts in tenant_settlements:
+                    print(f"      • {ts.tenant:<20} do zaplaty: {format_currency(ts.total_due_pln)}")
+            else:
+                print(" Brak najemcow przypisanych do tego mieszkania")
+        else:
+            print(" Brak danych o kosztach dla tego mieszkania w podanym okresie")
+            
+    else:
+        display_apartments(manager)
+        display_tenants(manager)
+        
     print(f"\n{'=' * 70}\n")
